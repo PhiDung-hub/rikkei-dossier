@@ -44,6 +44,23 @@ async function gunzip(bytes) {
   return await new Response(stream).text();
 }
 
+// Admin-uploaded photos live in a separate committed file (see the admin Worker),
+// so they can be added without rebuilding the dataset. Merge them over the base data.
+async function applyOverrides(model) {
+  try {
+    const res = await fetch(import.meta.env.BASE_URL + 'photo-overrides.json', { cache: 'no-store' });
+    if (!res.ok) return model;
+    const ov = await res.json();
+    const base = import.meta.env.BASE_URL;
+    for (const d of model.divisions)
+      for (const p of d.people) {
+        const v = ov[p.slug];
+        if (v) p.photo = /^https?:/.test(v) ? v : base + v;
+      }
+  } catch { /* overrides are optional */ }
+  return model;
+}
+
 export async function loadData() {
   const url = import.meta.env.BASE_URL + 'data.gz';
   const res = await fetch(url, { cache: 'no-store' });
@@ -53,5 +70,5 @@ export async function loadData() {
   // decompressed it (bytes are plain JSON). Only gunzip when the gzip magic is present.
   const isGzip = bytes[0] === 0x1f && bytes[1] === 0x8b;
   const text = isGzip ? await gunzip(bytes) : new TextDecoder().decode(bytes);
-  return expand(JSON.parse(text));
+  return applyOverrides(expand(JSON.parse(text)));
 }

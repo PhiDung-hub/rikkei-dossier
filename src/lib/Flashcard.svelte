@@ -1,4 +1,6 @@
 <script>
+  import { admin, uploadPhoto } from './admin.svelte.js';
+
   let { person, index, division, reveal = false } = $props();
 
   const hasJP = (s) => /[぀-ヿ㐀-鿿]/.test(s || '');
@@ -20,6 +22,13 @@
   let imgOk = $state(false);
   let flipped = $state(false);
 
+  // Admin upload: optimistic local preview + state
+  let localPhoto = $state(null);
+  let uploading = $state(false);
+  let uploadErr = $state('');
+  const shownPhoto = $derived(localPhoto ?? person.photo);
+  const canAdd = $derived(admin.on && !shownPhoto);
+
   // "Flip all" signal from the page: when it changes, match every card to it.
   // Individual clicks afterwards still toggle this card on its own.
   $effect(() => { flipped = reveal; });
@@ -29,6 +38,22 @@
   }
   function key(e) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipped = !flipped; }
+  }
+
+  async function onFile(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    uploading = true; uploadErr = '';
+    try {
+      await uploadPhoto(person.slug, file);
+      localPhoto = URL.createObjectURL(file);   // instant preview; real one after redeploy
+      imgOk = true;
+    } catch (ex) {
+      uploadErr = ex.message === 'unauthorized' ? 'Sai mật khẩu' : 'Tải ảnh thất bại';
+    } finally {
+      uploading = false;
+    }
   }
 </script>
 
@@ -48,11 +73,19 @@
       <div class="cornerNo">№ {String(index + 1).padStart(2, '0')}</div>
       <div class="avatar" style="background:{gradient(person.name)}">
         <span class="ini" class:jp={jpName}>{initials(person.name)}</span>
-        {#if person.photo}
-          <img src={person.photo} alt={person.name} loading="lazy" class:ok={imgOk}
+        {#if shownPhoto}
+          <img src={shownPhoto} alt={person.name} loading="lazy" class:ok={imgOk}
                onload={() => (imgOk = true)} onerror={(e) => e.currentTarget.remove()} />
         {/if}
+        {#if canAdd}
+          <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_noninteractive_element_interactions -->
+          <label class="addphoto" class:busy={uploading} onclick={(e) => e.stopPropagation()}>
+            {uploading ? '…' : '+ Ảnh'}
+            <input type="file" accept="image/*" onchange={onFile} hidden />
+          </label>
+        {/if}
       </div>
+      {#if uploadErr}<div class="uperr">{uploadErr}</div>{/if}
       <div class="name" class:jp={jpName}>{person.name}</div>
       <div class="fliphint">Nhấn để xem đáp án</div>
     </div>
@@ -120,6 +153,16 @@
   .ini { font-family: var(--serif); font-weight: 600; font-size: 34px; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
   .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s; }
   .avatar img.ok { opacity: 1; }
+  .addphoto {
+    position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); cursor: pointer;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .08em; white-space: nowrap;
+    color: #fff; background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep));
+    padding: 5px 12px; border-radius: 20px; box-shadow: 0 6px 16px -6px rgba(0,0,0,.6);
+    border: 1.5px solid var(--panel); transition: filter .15s;
+  }
+  .addphoto:hover { filter: brightness(1.08); }
+  .addphoto.busy { opacity: .7; cursor: wait; }
+  .uperr { margin-top: 8px; font-family: var(--mono); font-size: 10px; color: var(--accent-bright); }
 
   .name { font-family: var(--serif); font-weight: 600; font-size: 23px; line-height: 1.12; letter-spacing: -.01em; }
   .fliphint {

@@ -1,0 +1,14 @@
+name = "rikkei-dossier-admin"
+main = "src/index.js"
+compatibility_date = "2024-09-01"
+
+# Non-secret config — edit if your repo differs:
+[vars]
+GH_OWNER = "PhiDung-hub"
+GH_REPO = "rikkei-dossier"
+GH_BRANCH = "main"
+
+# Secrets are NOT stored here. After `npm i -g wrangler` and `wrangler login`, run:
+#   wrangler secret put ADMIN_PASSWORD   # then type: 123450
+#   wrangler secret put GITHUB_TOKEN     # a fine-grained PAT, Contents: Read+write on the repo
+#   wrangler deploy

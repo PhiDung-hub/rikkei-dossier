@@ -75,6 +75,23 @@ so they embed cross-origin without CORS issues.
 Any image URL works (or host your own). Slugs are the email local-part, e.g.
 `tung.ta@rikkeisoft.com` → `tung.ta`.
 
+### Admin: add a photo from the browser (optional)
+
+An admin can log in on the site (password-gated) and **upload** a photo for anyone who
+doesn't have one yet — no editing files by hand. Because the site is static, a tiny
+**Cloudflare Worker** does the writing: it holds the password and a GitHub token as
+secrets, and on upload it commits the (downscaled) photo into `public/images/` and
+registers it in `public/photo-overrides.json`, which the site merges on load.
+
+Setup is a one-time ~2-minute `wrangler deploy` — see **[`worker/README.md`](worker/README.md)**.
+Then put the Worker URL in `src/lib/config.js` (`ADMIN_WORKER_URL`). Until that's set, the
+**Admin** link (page footer) shows “not configured” and nothing else changes.
+
+Flow once configured: footer **Admin** → enter password → photoless cards show **“+ Ảnh”** →
+pick a file → it’s downscaled in-browser, committed, and live after the ~1-min redeploy
+(with an instant local preview meanwhile). The password is verified by the Worker
+server-side — it’s never in the page source.
+
 ## Deploy (GitHub Pages)
 
 `.github/workflows/deploy.yml` builds and deploys on every push to `main`. No secrets

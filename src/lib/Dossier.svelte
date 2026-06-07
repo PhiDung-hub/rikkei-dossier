@@ -2,6 +2,7 @@
   import DivisionNav from './DivisionNav.svelte';
   import Flashcard from './Flashcard.svelte';
   import ThemeSwitcher from './ThemeSwitcher.svelte';
+  import AdminBar from './AdminBar.svelte';
 
   let { data } = $props();
   let current = $state(0);
@@ -91,7 +92,7 @@
 
   <footer class="foot">
     <span>Rikkeisoft · Hồ sơ Lãnh đạo</span>
-    <span>Cập nhật {data.generated}</span>
+    <span class="footright">Cập nhật {data.generated} · <AdminBar /></span>
   </footer>
 </div>
 

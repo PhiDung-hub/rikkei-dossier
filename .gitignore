@@ -7,9 +7,7 @@ dist/
 rikkei-managers.csv
 managers.clean.json
 
-# Local photos (optional; add explicitly if you want them deployed)
-public/images/*
-!public/images/.gitkeep
+# public/images holds admin-uploaded photos (committed by the admin Worker) — keep them
 
 # Misc
 .DS_Store
