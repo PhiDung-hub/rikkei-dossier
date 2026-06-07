@@ -1,9 +1,5 @@
-// Client-side decryption — mirrors build.mjs.
-// Fetch public/data.enc → AES-256-GCM decrypt → gunzip → expand compact model.
-
-const PBKDF2_ITERATIONS = 250_000;
-const SALT_BYTES = 16;
-const IV_BYTES = 12;
+// Public data loader — fetch public/data.gz → gunzip → expand compact model.
+// No password: the data ships gzip-compressed (for size), not encrypted.
 
 // Internal style tier derived from the verbatim note text (notes are not translated).
 function tierFor(rank) {
@@ -47,23 +43,14 @@ async function gunzip(bytes) {
   return await new Response(stream).text();
 }
 
-// Throws if the passphrase is wrong (AES-GCM auth tag fails) or the file is missing.
-export async function loadAndDecrypt(password) {
-  const url = import.meta.env.BASE_URL + 'data.enc';
+export async function loadData() {
+  const url = import.meta.env.BASE_URL + 'data.gz';
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error('data-missing');
-  const buf = new Uint8Array(await res.arrayBuffer());
-
-  const salt = buf.subarray(0, SALT_BYTES);
-  const iv = buf.subarray(SALT_BYTES, SALT_BYTES + IV_BYTES);
-  const ct = buf.subarray(SALT_BYTES + IV_BYTES);
-
-  const baseKey = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
-  const key = await crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
-    baseKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-
-  const gz = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
-  return expand(JSON.parse(await gunzip(new Uint8Array(gz))));
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  // Some hosts serve .gz with Content-Encoding: gzip, so the browser has already
+  // decompressed it (bytes are plain JSON). Only gunzip when the gzip magic is present.
+  const isGzip = bytes[0] === 0x1f && bytes[1] === 0x8b;
+  const text = isGzip ? await gunzip(bytes) : new TextDecoder().decode(bytes);
+  return expand(JSON.parse(text));
 }

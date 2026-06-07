@@ -97,7 +97,7 @@
   .brand { flex: 1 1 320px; }
   .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: .42em; color: var(--brass); text-transform: uppercase; display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
-  h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(32px, 5vw, 56px); line-height: .98; letter-spacing: -.02em; }
+  h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(44px, 7.5vw, 88px); line-height: .94; letter-spacing: -.025em; }
   h1 em { font-style: italic; font-weight: 500; color: var(--accent-bright); }
   .meta { color: var(--muted); font-size: 14px; margin-top: 12px; }
   .meta b { color: var(--ink); font-variant-numeric: tabular-nums; }

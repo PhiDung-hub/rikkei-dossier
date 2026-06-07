@@ -2,21 +2,19 @@
 // build.mjs — Rikkei Managers data pipeline
 // -----------------------------------------------------------------------------
 //   rikkei-managers.csv  ──parse+clean──▶  managers.clean.json   (editable source)
-//                                   └──compact──▶ gzip ──▶ AES-256-GCM ──▶ public/data.enc
+//                                   └──compact──▶ gzip ──▶ public/data.gz   (shipped)
 //
-// The cleartext CSV and managers.clean.json are git-ignored and never deployed.
-// Only the encrypted public/data.enc ships. The browser fetches it, then
-// decrypts + gunzips with the shared passphrase (see src/lib/crypto.js).
+// The data is PUBLIC (no password). It is gzip-compressed only — for transfer size,
+// not secrecy. The browser fetches data.gz, gunzips it, and renders (see src/lib/data.js).
+// The cleartext CSV and managers.clean.json stay git-ignored; the shipped artifact is
+// the compact gzipped JSON in public/data.gz.
 //
 // Usage:
-//   node build.mjs "your-strong-password"        rebuild everything from the CSV
-//   node build.mjs "pw" --from-json              rebuild from managers.clean.json
-//                                                (after you hand-edit the cleaned data)
-//   node build.mjs                               uses placeholder "rikkei2026"
+//   node build.mjs                 rebuild from the CSV
+//   node build.mjs --from-json     rebuild from managers.clean.json (after hand-edits)
 // -----------------------------------------------------------------------------
 
 import { readFile, writeFile } from 'node:fs/promises';
-import { webcrypto as crypto } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -24,10 +22,6 @@ import { dirname, join } from 'node:path';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const p = (f) => join(HERE, f);
 
-// ---- KDF / cipher parameters (MUST match src/lib/crypto.js) ----
-const PBKDF2_ITERATIONS = 250_000;
-const SALT_BYTES = 16;
-const IV_BYTES = 12;
 const EMAIL_DOMAIN = '@rikkeisoft.com'; // most-common domain, factored out of the payload
 
 // ---------------------------------------------------------------------------
@@ -133,28 +127,9 @@ function compact(model) {
 }
 
 // ---------------------------------------------------------------------------
-// gzip → AES-256-GCM.  Output bytes = [salt(16)][iv(12)][ciphertext]
-// ---------------------------------------------------------------------------
-async function seal(plaintext, password) {
-  const gz = gzipSync(Buffer.from(plaintext, 'utf8'), { level: 9 });
-  const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
-  const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
-  const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
-  const key = await crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
-    baseKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
-  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, gz));
-  const out = new Uint8Array(salt.length + iv.length + ct.length);
-  out.set(salt, 0); out.set(iv, salt.length); out.set(ct, salt.length + iv.length);
-  return { out, gzLen: gz.length };
-}
-
-// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
-const argv = process.argv.slice(2);
-const fromJson = argv.includes('--from-json');
-const password = argv.filter((a) => !a.startsWith('--'))[0] || 'rikkei2026';
+const fromJson = process.argv.includes('--from-json');
 
 let model;
 if (fromJson) {
@@ -167,12 +142,10 @@ if (fromJson) {
 }
 
 const plaintext = JSON.stringify(compact(model));
-const { out, gzLen } = await seal(plaintext, password);
-await writeFile(p('public/data.enc'), out);
+const gz = gzipSync(Buffer.from(plaintext, 'utf8'), { level: 9 });
+await writeFile(p('public/data.gz'), gz);
 
-const pct = ((out.length / Buffer.byteLength(plaintext)) * 100).toFixed(0);
+const pct = ((gz.length / Buffer.byteLength(plaintext)) * 100).toFixed(0);
 console.log(`• ${model.total} people · ${model.divisions.length} divisions`);
-console.log(`• compact ${Buffer.byteLength(plaintext)} B → gzip ${gzLen} B → encrypted ${out.length} B  (${pct}% of plaintext)`);
-console.log(`• wrote public/data.enc  (password: "${password}")`);
-if (password === 'rikkei2026')
-  console.log('  ↪ placeholder password — re-run as:  node build.mjs "your-strong-password"');
+console.log(`• compact ${Buffer.byteLength(plaintext)} B → gzip ${gz.length} B  (${pct}% of plaintext)`);
+console.log('• wrote public/data.gz  (public, no password)');

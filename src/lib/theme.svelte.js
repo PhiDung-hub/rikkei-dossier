@@ -9,9 +9,10 @@ export const THEMES = [
 ];
 
 const KEY = 'rikkei-theme';
-const stored = (typeof localStorage !== 'undefined' && localStorage.getItem(KEY)) || 'dark';
+const DEFAULT = 'paper';
+const stored = (typeof localStorage !== 'undefined' && localStorage.getItem(KEY)) || DEFAULT;
 
-export const theme = $state({ id: THEMES.some((t) => t.id === stored) ? stored : 'dark' });
+export const theme = $state({ id: THEMES.some((t) => t.id === stored) ? stored : DEFAULT });
 
 function apply(id) {
   document.documentElement.dataset.theme = id;
