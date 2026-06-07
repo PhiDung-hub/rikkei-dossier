@@ -135,7 +135,7 @@
       </div>
 
       {#if uploadErr}<div class="uperr">{uploadErr}</div>{/if}
-      {#if !hideName}<div class="name" class:jp={jpName}>{person.name}</div>{/if}
+      {#if !hideName || !shownPhoto}<div class="name" class:jp={jpName}>{person.name}</div>{/if}
       {#if canMenu}<div class="fliphint">Chuột phải · giữ để sửa ảnh</div>{/if}
 
       {#if menuOpen}
