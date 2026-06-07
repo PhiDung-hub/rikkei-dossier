@@ -136,7 +136,7 @@
 
       {#if uploadErr}<div class="uperr">{uploadErr}</div>{/if}
       <div class="name" class:jp={jpName}>{person.name}</div>
-      <div class="fliphint">{canMenu ? 'Chuột phải · giữ để sửa ảnh' : 'Nhấn để xem đáp án'}</div>
+      {#if canMenu}<div class="fliphint">Chuột phải · giữ để sửa ảnh</div>{/if}
 
       {#if menuOpen}
         <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
