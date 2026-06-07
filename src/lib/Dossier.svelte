@@ -229,18 +229,18 @@
   .navbtn:active:not(:disabled) { transform: scale(.94); }
   .navbtn:disabled { opacity: .3; cursor: default; }
 
-  /* Bottom pager — icon-only prev/next; no text so it never breaks narrow layouts */
-  .pager { display: flex; gap: 14px; margin-top: 46px; }
+  /* Bottom pager — small icon-only prev/next, centered */
+  .pager { display: flex; gap: 12px; margin-top: 40px; justify-content: center; }
   .pg {
-    all: unset; box-sizing: border-box; cursor: pointer; flex: 1 1 0; min-width: 0;
-    display: flex; align-items: center; justify-content: center; padding: 15px;
-    border: 1px solid var(--hair2); border-radius: 14px; background: var(--panel);
+    all: unset; box-sizing: border-box; cursor: pointer; flex: none;
+    display: grid; place-items: center; width: 44px; height: 44px;
+    border: 1px solid var(--hair2); border-radius: 12px; background: var(--panel);
     transition: background .18s, border-color .18s, transform .14s, opacity .18s, box-shadow .2s;
   }
   .pg:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
-  .pg:active:not(:disabled) { transform: translateY(0) scale(.99); }
+  .pg:active:not(:disabled) { transform: translateY(0) scale(.96); }
   .pg:disabled { opacity: .35; cursor: default; }
-  .pgic { width: 22px; height: 22px; flex: none; color: var(--accent-bright); }
+  .pgic { width: 20px; height: 20px; flex: none; color: var(--accent-bright); }
   /* Floating action buttons — stacked bottom-right, thumb-reachable on mobile */
   .fabs {
     position: fixed; z-index: 40;
