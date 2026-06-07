@@ -6,6 +6,7 @@
   let { data } = $props();
   let current = $state(0);
   let query = $state('');
+  let revealAll = $state(false);   // "flip all" signal for the current page
 
   const hasJP = (s) => /[぀-ヿ㐀-鿿]/.test(s || '');
   const pad = (n) => String(n).padStart(2, '0');
@@ -23,7 +24,7 @@
   });
 
   function select(i) {
-    current = i; query = '';
+    current = i; query = ''; revealAll = false;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 </script>
@@ -41,7 +42,7 @@
       <ThemeSwitcher />
       <div class="searchbox">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-        <input type="search" placeholder="Tìm tên, chức vụ, email…" bind:value={query} aria-label="Tìm kiếm" />
+        <input type="search" placeholder="Tìm tên, chức vụ, email…" bind:value={query} oninput={() => (revealAll = false)} aria-label="Tìm kiếm" />
       </div>
     </div>
   </header>
@@ -50,14 +51,21 @@
     <DivisionNav divisions={data.divisions} current={results ? -1 : current} onselect={select} />
 
     <section class="stage">
+      {#snippet flipAllBtn()}
+        <button class="flipall" class:on={revealAll} onclick={() => (revealAll = !revealAll)}>
+          {revealAll ? 'Ẩn tất cả' : 'Lật tất cả'}
+        </button>
+      {/snippet}
+
       {#if results}
         <div class="stagehead">
           <h2>Kết quả tìm kiếm</h2><span class="num">{results.length} kết quả</span><span class="rule"></span>
+          {#if results.length}{@render flipAllBtn()}{/if}
         </div>
         {#if results.length}
           <div class="grid">
             {#each results as p, i (p.slug + '-' + i)}
-              <Flashcard person={p} index={i} division={p._div} />
+              <Flashcard person={p} index={i} division={p._div} reveal={revealAll} />
             {/each}
           </div>
         {:else}
@@ -70,10 +78,11 @@
             <h2 class:jp={hasJP(d.name)}>{d.name}</h2>
             <span class="num">{pad(current + 1)} / {pad(data.divisions.length)}</span>
             <span class="rule"></span>
+            {@render flipAllBtn()}
           </div>
           <div class="grid">
             {#each d.people as p, i (p.slug + '-' + i)}
-              <Flashcard person={p} index={i} division={d.name} />
+              <Flashcard person={p} index={i} division={d.name} reveal={revealAll} />
             {/each}
           </div>
         </div>
@@ -82,8 +91,8 @@
   </div>
 
   <footer class="foot">
-    <span>Rikkeisoft · Bảo mật — không chia sẻ ra ngoài</span>
-    <span>Hồ sơ mã hóa · {data.generated}</span>
+    <span>Rikkeisoft · Hồ sơ Lãnh đạo</span>
+    <span>Cập nhật {data.generated}</span>
   </footer>
 </div>
 
@@ -117,6 +126,13 @@
   .stagehead h2 { font-family: var(--serif); font-weight: 600; font-size: clamp(23px, 3.4vw, 38px); letter-spacing: -.015em; line-height: 1.05; }
   .num { font-family: var(--mono); font-size: 13px; color: var(--brass); letter-spacing: .1em; }
   .rule { flex: 1; height: 1px; background: var(--hair2); align-self: center; min-width: 30px; }
+  .flipall {
+    all: unset; cursor: pointer; white-space: nowrap; font-family: var(--mono); font-size: 11px;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 9px 18px;
+    border-radius: 30px; border: 1px solid var(--hair); transition: color .2s, border-color .2s, background .2s;
+  }
+  .flipall:hover { color: var(--ink); border-color: var(--accent); }
+  .flipall.on { color: #fff; border-color: transparent; background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep)); }
 
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(262px, 1fr)); gap: 22px; }
   .empty { color: var(--muted); font-size: 15px; padding: 60px 0; text-align: center; font-style: italic; }

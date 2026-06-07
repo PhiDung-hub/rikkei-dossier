@@ -48,7 +48,7 @@ function parseCSV(text) {
 // Cleaning
 // ---------------------------------------------------------------------------
 const clean = (s) => (s ?? '').replace(/\s+/g, ' ').trim();
-const EXEC_GROUP = 'Ban Điều hành · Executive Team';
+const EXEC_GROUP = 'Executive Team';   // original notes text for the blank-division top group
 
 function normalizeDivision(raw) {
   let d = clean(raw);

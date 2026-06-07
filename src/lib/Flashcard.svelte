@@ -1,5 +1,5 @@
 <script>
-  let { person, index, division } = $props();
+  let { person, index, division, reveal = false } = $props();
 
   const hasJP = (s) => /[぀-ヿ㐀-鿿]/.test(s || '');
 
@@ -20,6 +20,10 @@
   const jpName = $derived(hasJP(person.name));
   let imgOk = $state(false);
   let flipped = $state(false);
+
+  // "Flip all" signal from the page: when it changes, match every card to it.
+  // Individual clicks afterwards still toggle this card on its own.
+  $effect(() => { flipped = reveal; });
 
   function toggle(e) {
     if (e.target.closest('a')) return;
@@ -50,22 +54,19 @@
              onload={() => (imgOk = true)} onerror={(e) => e.currentTarget.remove()} />
       </div>
       <div class="name" class:jp={jpName}>{person.name}</div>
-      {#if person.title}<div class="title" class:jp={hasJP(person.title)}>{person.title}</div>{/if}
-      {#if person.rank}<div class="badge {person.tier || ''}">{person.rank}</div>{/if}
-      <div class="fliphint">Di chuột · chạm để xem</div>
+      <div class="fliphint">Nhấn để xem đáp án</div>
     </div>
 
-    <!-- BACK -->
+    <!-- BACK (the answer) -->
     <div class="face back">
       <div class="bname" class:jp={jpName}>{person.name}</div>
-      {#if person.title}<div class="btitle" class:jp={hasJP(person.title)}>{person.title}</div>{/if}
       <hr />
       <div class="row">
-        <span class="lbl">Email</span>
-        {#if person.email}
-          <a class="val" href="mailto:{person.email}">{person.email}</a>
+        <span class="lbl">Chức vụ</span>
+        {#if person.title}
+          <span class="val" class:jp={hasJP(person.title)}>{person.title}</span>
         {:else}
-          <span class="val none">chưa cập nhật</span>
+          <span class="val none">—</span>
         {/if}
       </div>
       <div class="row">
@@ -76,7 +77,15 @@
         <span class="lbl">Cấp bậc</span>
         <span class="val">{person.rank || '—'}</span>
       </div>
-      <div class="foot"><span>Rikkeisoft</span><span class="stamp">Bảo mật</span></div>
+      <div class="row">
+        <span class="lbl">Email</span>
+        {#if person.email}
+          <a class="val" href="mailto:{person.email}">{person.email}</a>
+        {:else}
+          <span class="val none">chưa cập nhật</span>
+        {/if}
+      </div>
+      <div class="foot"><span>Rikkeisoft</span><span class="stamp">Hồ sơ Lãnh đạo</span></div>
     </div>
   </div>
 </div>
@@ -88,7 +97,7 @@
     transition: transform .7s cubic-bezier(.6,.02,.2,1);
   }
   .card.flipped .inner { transform: rotateY(180deg); }
-  @media (hover: hover) { .card:hover .inner { transform: rotateY(180deg); } }
+  .card { cursor: pointer; }
   .card:focus-visible { box-shadow: 0 0 0 2px var(--accent); border-radius: 16px; }
 
   .face {
@@ -112,23 +121,15 @@
   .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s; }
   .avatar img.ok { opacity: 1; }
 
-  .name { font-family: var(--serif); font-weight: 600; font-size: 21px; line-height: 1.12; letter-spacing: -.01em; }
-  .title { font-family: var(--mono); font-size: 11px; line-height: 1.45; color: var(--muted); margin-top: 9px; letter-spacing: .02em; max-width: 230px; }
-  .badge {
-    margin-top: 16px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em;
-    padding: 5px 12px; border-radius: 30px; border: 1px solid var(--hair); color: var(--brass);
-  }
-  .badge.exec { color: #fff; background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep)); border-color: transparent; }
-  .badge.guest { color: var(--muted); }
+  .name { font-family: var(--serif); font-weight: 600; font-size: 23px; line-height: 1.12; letter-spacing: -.01em; }
   .fliphint {
     position: absolute; bottom: 13px; left: 0; right: 0; text-align: center; font-family: var(--mono);
     font-size: 9px; letter-spacing: .22em; color: var(--faint); text-transform: uppercase;
   }
 
   .back { transform: rotateY(180deg); display: flex; flex-direction: column; padding: 26px 24px; }
-  .bname { font-family: var(--serif); font-weight: 600; font-size: 19px; line-height: 1.1; letter-spacing: -.01em; padding-right: 8px; }
-  .btitle { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin-top: 7px; line-height: 1.5; }
-  hr { border: 0; border-top: 1px solid var(--hair2); margin: 16px 0; }
+  .bname { font-family: var(--serif); font-weight: 600; font-size: 20px; line-height: 1.1; letter-spacing: -.01em; padding-right: 8px; }
+  hr { border: 0; border-top: 1px solid var(--hair2); margin: 14px 0; }
   .row { display: flex; gap: 12px; font-size: 13px; margin-bottom: 13px; align-items: flex-start; }
   .lbl { font-family: var(--mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); min-width: 64px; padding-top: 3px; }
   .val { flex: 1; color: var(--ink); word-break: break-word; }
