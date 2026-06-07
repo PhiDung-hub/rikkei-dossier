@@ -43,6 +43,8 @@ const PHOTOS = {
   'phuongtv':  'https://rikkeisoft.com/wp-content/uploads/2024/11/Ta-Viet-Phuong.png',
   'khangpq':   'https://rikkeisoft.com/wp-content/uploads/2026/02/PHAM-QUANG-KHANG_s.jpg',
   'hangntt2':  'https://rikkeisoft.com/wp-content/uploads/2024/10/C-Hang.png',
+  'huy.tran':  'https://rikkeisoft.com/wp-content/uploads/2024/10/A-Huy.png',          // Trần Quốc Huy (CTO RKTECH)
+  'ron-martino': 'https://rikkeisoft.com/wp-content/uploads/2026/02/3.png',            // Ron Martino
 };
 
 // ---------------------------------------------------------------------------
