@@ -1,0 +1,18 @@
+{
+  "name": "rikkei-dossier",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Encrypted, themeable flashcard dossier of Rikkeisoft leadership",
+  "scripts": {
+    "data": "node build.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "svelte": "^5.19.0",
+    "vite": "^6.0.7"
+  }
+}

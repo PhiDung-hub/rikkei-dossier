@@ -1,0 +1,95 @@
+/* =========================================================================
+   Global tokens, themes, atmosphere, resets.
+   Component-specific styles live inside each .svelte file (scoped).
+   ========================================================================= */
+
+:root,
+[data-theme='dark'] {
+  --bg:#141110; --bg2:#1b1715; --panel:#211c19; --panel2:#27211d;
+  --ink:#f4ece0; --muted:#a59a8d; --faint:#6f655b;
+  --accent:#d81e34; --accent-bright:#f4344b; --accent-deep:#9c1322;
+  --brass:#c7a667; --hair:rgba(199,166,103,.18); --hair2:rgba(244,236,224,.07);
+  --shadow:0 28px 60px -28px rgba(0,0,0,.85); --grain:.05;
+  --atmosphere:
+    radial-gradient(120% 90% at 85% -10%, rgba(216,30,52,.16), transparent 55%),
+    radial-gradient(90% 70% at -10% 110%, rgba(199,166,103,.10), transparent 55%),
+    linear-gradient(180deg,#171311,#100d0c);
+}
+[data-theme='light'] {
+  --bg:#efece6; --bg2:#f6f3ee; --panel:#ffffff; --panel2:#faf7f1;
+  --ink:#241f1a; --muted:#6b6256; --faint:#9c9488;
+  --accent:#c8102e; --accent-bright:#e01934; --accent-deep:#9c1322;
+  --brass:#a9863f; --hair:rgba(40,30,20,.14); --hair2:rgba(40,30,20,.07);
+  --shadow:0 22px 46px -28px rgba(70,50,30,.30); --grain:.025;
+  --atmosphere:
+    radial-gradient(120% 90% at 88% -10%, rgba(200,16,46,.10), transparent 55%),
+    radial-gradient(90% 70% at -10% 110%, rgba(169,134,63,.12), transparent 55%),
+    linear-gradient(180deg,#f4f1ea,#eae6dd);
+}
+[data-theme='paper'] {
+  --bg:#f3e7c8; --bg2:#f8efd5; --panel:#fdf7e6; --panel2:#f7eed3;
+  --ink:#4a3d23; --muted:#7c6a48; --faint:#a8946a;
+  --accent:#bf4030; --accent-bright:#d24a36; --accent-deep:#8f2c20;
+  --brass:#9c7b33; --hair:rgba(120,95,40,.22); --hair2:rgba(120,95,40,.11);
+  --shadow:0 20px 42px -26px rgba(140,110,55,.40); --grain:.05;
+  --atmosphere:
+    radial-gradient(120% 95% at 85% -10%, rgba(191,64,48,.10), transparent 55%),
+    radial-gradient(95% 75% at -8% 112%, rgba(156,123,51,.18), transparent 55%),
+    linear-gradient(180deg,#f6ebd1,#eee0bd);
+}
+[data-theme='tokyo'] {
+  --bg:#1a1b26; --bg2:#1f2335; --panel:#24283b; --panel2:#2a2f44;
+  --ink:#c0caf5; --muted:#9aa5ce; --faint:#565f89;
+  --accent:#7aa2f7; --accent-bright:#bb9af7; --accent-deep:#3d59a1;
+  --brass:#e0af68; --hair:rgba(122,162,247,.20); --hair2:rgba(192,202,245,.07);
+  --shadow:0 28px 60px -28px rgba(0,0,0,.70); --grain:.04;
+  --atmosphere:
+    radial-gradient(120% 90% at 85% -10%, rgba(122,162,247,.18), transparent 55%),
+    radial-gradient(95% 75% at -10% 110%, rgba(187,154,247,.14), transparent 55%),
+    linear-gradient(180deg,#1a1b26,#15151d);
+}
+[data-theme='coal'] {
+  --bg:#0c0c0d; --bg2:#141416; --panel:#161618; --panel2:#1c1c1f;
+  --ink:#e6e6e6; --muted:#8a8a8e; --faint:#56565a;
+  --accent:#e0552d; --accent-bright:#ff6a3d; --accent-deep:#a83a18;
+  --brass:#7a7a7e; --hair:rgba(255,255,255,.10); --hair2:rgba(255,255,255,.05);
+  --shadow:0 28px 60px -28px rgba(0,0,0,.90); --grain:.07;
+  --atmosphere:
+    radial-gradient(120% 80% at 50% 118%, rgba(224,85,45,.14), transparent 55%),
+    radial-gradient(90% 60% at 90% -10%, rgba(255,106,61,.06), transparent 55%),
+    linear-gradient(180deg,#0d0d0e,#070708);
+}
+
+:root{
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Hanken Grotesk",system-ui,-apple-system,sans-serif;
+  --mono:"Spline Sans Mono","Noto Sans JP",ui-monospace,monospace;
+  --jp:"Noto Sans JP";
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{
+  font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.5;
+  -webkit-font-smoothing:antialiased;min-height:100dvh;overflow-x:hidden;
+  transition:background-color .4s ease,color .4s ease;
+}
+/* atmosphere + grain layers */
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:var(--atmosphere)}
+body::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:var(--grain);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:lang(ja),.jp{font-family:var(--jp),var(--sans)}
+
+button{font-family:inherit}
+::selection{background:var(--accent);color:#fff}
+.navlist::-webkit-scrollbar{width:7px}
+.navlist::-webkit-scrollbar-thumb{background:var(--hair);border-radius:4px}
+
+@keyframes rise{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes cardin{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}
+  30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}

@@ -1,0 +1,17 @@
+# Dependencies & build output
+node_modules/
+dist/
+.vite/
+
+# Cleartext PII — NEVER commit. Only the encrypted public/data.enc is shared.
+rikkei-managers.csv
+managers.clean.json
+
+# Local photos (optional; add explicitly if you want them deployed)
+public/images/*
+!public/images/.gitkeep
+
+# Misc
+.DS_Store
+*.log
+.playwright-mcp/
