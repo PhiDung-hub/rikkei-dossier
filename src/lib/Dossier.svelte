@@ -69,8 +69,6 @@
   const lastIdx = $derived(data.divisions.length - 1);
   const canPrev = $derived(!results && current > 0);
   const canNext = $derived(!results && current < lastIdx);
-  const prevName = $derived(current > 0 ? data.divisions[current - 1].name : '');
-  const nextName = $derived(current < lastIdx ? data.divisions[current + 1].name : '');
   function go(delta) {
     if (results) return;
     const i = current + delta;
@@ -150,18 +148,10 @@
           </div>
 
           <nav class="pager" aria-label="Điều hướng bộ phận">
-            <button class="pg" onclick={() => go(-1)} disabled={!canPrev}>
+            <button class="pg" onclick={() => go(-1)} disabled={!canPrev} aria-label="Bộ phận trước">
               <svg class="pgic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-              <span class="pgt">
-                <span class="pgk">Bộ phận trước</span>
-                <span class="pgn" class:jp={hasJP(prevName)}>{prevName || '—'}</span>
-              </span>
             </button>
-            <button class="pg next" onclick={() => go(1)} disabled={!canNext}>
-              <span class="pgt">
-                <span class="pgk">Bộ phận tiếp theo</span>
-                <span class="pgn" class:jp={hasJP(nextName)}>{nextName || '—'}</span>
-              </span>
+            <button class="pg" onclick={() => go(1)} disabled={!canNext} aria-label="Bộ phận tiếp theo">
               <svg class="pgic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
             </button>
           </nav>
@@ -239,23 +229,18 @@
   .navbtn:active:not(:disabled) { transform: scale(.94); }
   .navbtn:disabled { opacity: .3; cursor: default; }
 
-  /* Bottom pager — the primary "turn the page" affordance after reading a group */
+  /* Bottom pager — icon-only prev/next; no text so it never breaks narrow layouts */
   .pager { display: flex; gap: 14px; margin-top: 46px; }
   .pg {
     all: unset; box-sizing: border-box; cursor: pointer; flex: 1 1 0; min-width: 0;
-    display: flex; align-items: center; gap: 14px; padding: 16px 20px;
+    display: flex; align-items: center; justify-content: center; padding: 15px;
     border: 1px solid var(--hair2); border-radius: 14px; background: var(--panel);
     transition: background .18s, border-color .18s, transform .14s, opacity .18s, box-shadow .2s;
   }
-  .pg.next { justify-content: flex-end; }
   .pg:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
   .pg:active:not(:disabled) { transform: translateY(0) scale(.99); }
   .pg:disabled { opacity: .35; cursor: default; }
   .pgic { width: 22px; height: 22px; flex: none; color: var(--accent-bright); }
-  .pgt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-  .pg.next .pgt { align-items: flex-end; text-align: right; }
-  .pgk { font-family: var(--mono); font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); }
-  .pgn { font-family: var(--serif); font-weight: 600; font-size: 16px; color: var(--ink); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* Floating action buttons — stacked bottom-right, thumb-reachable on mobile */
   .fabs {
     position: fixed; z-index: 40;
