@@ -183,7 +183,7 @@
 </div>
 
 <style>
-  .card { perspective: 1600px; height: 430px; animation: cardin .55s cubic-bezier(.2,.8,.2,1) both; outline: none; cursor: pointer; }
+  .card { perspective: 1600px; height: 410px; animation: cardin .55s cubic-bezier(.2,.8,.2,1) both; outline: none; cursor: pointer; }
   .inner {
     position: relative; width: 100%; height: 100%; transform-style: preserve-3d;
     transition: transform .3s cubic-bezier(.6,.02,.2,1);
@@ -204,7 +204,7 @@
 
   .front { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 22px 14px; text-align: center; }
   .avatar {
-    width: min(96%, 320px); aspect-ratio: 1; max-width: 100%;
+    width: min(88%, 274px); aspect-ratio: 1; max-width: 100%;
     border-radius: 50%; position: relative; display: grid; place-items: center;
     container-type: inline-size;
     margin-bottom: 16px; overflow: hidden; border: 1px solid var(--hair);
