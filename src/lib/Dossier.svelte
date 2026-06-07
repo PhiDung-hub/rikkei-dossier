@@ -27,6 +27,7 @@
   let current = $state(initialDivision());
   let query = $state('');
   let revealAll = $state(false);   // "flip all" signal for the current page
+  let hideNames = $state(false);   // practice mode: front shows only the photo
 
   const hasJP = (s) => /[぀-ヿ㐀-鿿]/.test(s || '');
   const pad = (n) => String(n).padStart(2, '0');
@@ -120,7 +121,7 @@
         {#if results.length}
           <div class="grid">
             {#each results as p, i (p.slug + '-' + i)}
-              <Flashcard person={p} index={i} division={p._div} reveal={revealAll} />
+              <Flashcard person={p} index={i} division={p._div} reveal={revealAll} hideName={hideNames} />
             {/each}
           </div>
         {:else}
@@ -144,7 +145,7 @@
           </div>
           <div class="grid">
             {#each d.people as p, i (p.slug + '-' + i)}
-              <Flashcard person={p} index={i} division={d.name} reveal={revealAll} />
+              <Flashcard person={p} index={i} division={d.name} reveal={revealAll} hideName={hideNames} />
             {/each}
           </div>
 
@@ -170,10 +171,23 @@
   </div>
 
   {#if results ? results.length > 0 : true}
-    <button class="flipall" class:on={revealAll} onclick={() => (revealAll = !revealAll)} aria-pressed={revealAll}>
-      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h13l-3.5-3.5M20 17H7l3.5 3.5" /></svg>
-      {revealAll ? 'Ẩn tất cả' : 'Lật tất cả'}
-    </button>
+    <div class="fabs">
+      <button class="fab" class:on={hideNames} onclick={() => (hideNames = !hideNames)} aria-pressed={hideNames}
+              title="Chỉ xem ảnh để luyện nhớ; tên hiện ở mặt sau">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          {#if hideNames}
+            <circle cx="12" cy="12" r="3" /><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+          {:else}
+            <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a13.2 13.2 0 0 1-1.67 2.68M6.6 6.6A13.5 13.5 0 0 0 2 11s3.5 7 10 7a9.1 9.1 0 0 0 5.4-1.6M9.9 9.9a3 3 0 1 0 4.2 4.2" /><path d="m2 2 20 20" />
+          {/if}
+        </svg>
+        {hideNames ? 'Hiện tên' : 'Ẩn tên'}
+      </button>
+      <button class="fab" class:on={revealAll} onclick={() => (revealAll = !revealAll)} aria-pressed={revealAll}>
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h13l-3.5-3.5M20 17H7l3.5 3.5" /></svg>
+        {revealAll ? 'Ẩn tất cả' : 'Lật tất cả'}
+      </button>
+    </div>
   {/if}
 
   <footer class="foot">
@@ -242,11 +256,14 @@
   .pg.next .pgt { align-items: flex-end; text-align: right; }
   .pgk { font-family: var(--mono); font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); }
   .pgn { font-family: var(--serif); font-weight: 600; font-size: 16px; color: var(--ink); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  /* Floating action button — anchored bottom-right, thumb-reachable on mobile */
-  .flipall {
+  /* Floating action buttons — stacked bottom-right, thumb-reachable on mobile */
+  .fabs {
     position: fixed; z-index: 40;
     right: max(22px, env(safe-area-inset-right));
     bottom: max(22px, env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
+  }
+  .fab {
     display: inline-flex; align-items: center; gap: 9px; cursor: pointer; border: 0;
     font-family: var(--sans); font-weight: 800; font-size: 15px; letter-spacing: .01em;
     color: #fff; padding: 15px 24px; border-radius: 40px; white-space: nowrap;
@@ -254,15 +271,16 @@
     box-shadow: 0 18px 38px -12px rgba(0,0,0,.55), 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
     transition: transform .14s, filter .2s, box-shadow .2s;
   }
-  .flipall:hover { filter: brightness(1.08); transform: translateY(-2px); }
-  .flipall:active { transform: translateY(0) scale(.98); }
-  .flipall.on {
+  .fab:hover { filter: brightness(1.08); transform: translateY(-2px); }
+  .fab:active { transform: translateY(0) scale(.98); }
+  .fab.on {
     color: var(--ink); background: linear-gradient(180deg, var(--panel2), var(--panel));
     box-shadow: 0 18px 38px -12px rgba(0,0,0,.55), inset 0 0 0 1.6px var(--accent);
   }
-  .flipall .ic { width: 17px; height: 17px; flex: none; }
+  .fab .ic { width: 17px; height: 17px; flex: none; }
   @media (max-width: 560px) {
-    .flipall { right: 14px; bottom: 14px; padding: 14px 22px; font-size: 15px; }
+    .fabs { right: 14px; bottom: 14px; gap: 10px; }
+    .fab { padding: 13px 20px; font-size: 14px; }
   }
 
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(262px, 1fr)); gap: 22px; }

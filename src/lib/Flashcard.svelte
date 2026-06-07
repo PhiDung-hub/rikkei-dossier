@@ -1,7 +1,7 @@
 <script>
   import { admin, uploadPhoto, removePhoto } from './admin.svelte.js';
 
-  let { person, index, division, reveal = false } = $props();
+  let { person, index, division, reveal = false, hideName = false } = $props();
 
   const hasJP = (s) => /[぀-ヿ㐀-鿿]/.test(s || '');
 
@@ -135,7 +135,7 @@
       </div>
 
       {#if uploadErr}<div class="uperr">{uploadErr}</div>{/if}
-      <div class="name" class:jp={jpName}>{person.name}</div>
+      {#if !hideName}<div class="name" class:jp={jpName}>{person.name}</div>{/if}
       {#if canMenu}<div class="fliphint">Chuột phải · giữ để sửa ảnh</div>{/if}
 
       {#if menuOpen}
