@@ -27,22 +27,45 @@
   let removed = $state(false);     // optimistic removal
   let uploading = $state(false);
   let uploadErr = $state('');
-  const shownPhoto = $derived(removed ? null : (localPhoto ?? person.photo));
+  let menuOpen = $state(false);
+  let suppressClick = false;
+  let pressTimer = null;
 
-  // "Flip all" signal from the page: when it changes, match every card to it.
-  // Individual clicks afterwards still toggle this card on its own.
+  const shownPhoto = $derived(removed ? null : (localPhoto ?? person.photo));
+  // Photos sourced from an external hyperlink (rikkeisoft) are the source of truth → locked.
+  // Admin-managed photos resolve to a same-origin relative path (no http scheme).
+  const externalPhoto = $derived(!localPhoto && !removed && /^https?:\/\//.test(person.photo || ''));
+  const canEdit = $derived(admin.on && !externalPhoto);
+  const canAdd = $derived(canEdit && !shownPhoto);   // click avatar to add
+  const canMenu = $derived(canEdit && !!shownPhoto); // right-click / long-press to change·remove
+
   $effect(() => { flipped = reveal; });
 
   function toggle() {
+    if (suppressClick) { suppressClick = false; return; }
+    if (menuOpen) { menuOpen = false; return; }
     flipped = !flipped;
   }
   function key(e) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipped = !flipped; }
   }
 
+  // open the change/remove menu via right-click (desktop) or long-press (mobile)
+  function onContext(e) {
+    if (!canMenu) return;
+    e.preventDefault(); e.stopPropagation();
+    menuOpen = true;
+  }
+  function onPressStart() {
+    if (!canMenu) return;
+    pressTimer = setTimeout(() => { menuOpen = true; suppressClick = true; }, 450);
+  }
+  function onPressCancel() { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } }
+
   async function onFile(e) {
     const file = e.target.files?.[0];
     e.target.value = '';
+    menuOpen = false;
     if (!file) return;
     uploading = true; uploadErr = '';
     try {
@@ -59,6 +82,7 @@
 
   async function onRemove(e) {
     e.stopPropagation();
+    menuOpen = false;
     uploading = true; uploadErr = '';
     try {
       await removePhoto(person.slug);
@@ -85,29 +109,44 @@
     <!-- FRONT -->
     <div class="face front">
       <div class="cornerNo">№ {String(index + 1).padStart(2, '0')}</div>
-      <div class="avatar" style="background:{gradient(person.name)}">
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        class="avatar"
+        style="background:{gradient(person.name)}"
+        oncontextmenu={onContext}
+        ontouchstart={onPressStart}
+        ontouchend={onPressCancel}
+        ontouchmove={onPressCancel}
+        ontouchcancel={onPressCancel}
+      >
         <span class="ini" class:jp={jpName}>{initials(person.name)}</span>
         {#if shownPhoto}
           <img src={shownPhoto} alt={person.name} loading="lazy" class:ok={imgOk}
                onload={() => (imgOk = true)} onerror={(e) => e.currentTarget.remove()} />
         {/if}
-        {#if admin.on}
-          <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-          <div class="adminctl" class:busy={uploading} onclick={(e) => e.stopPropagation()}>
-            {#if uploading}
-              <span class="ctl">…</span>
-            {:else if shownPhoto}
-              <label class="ctl">Đổi<input type="file" accept="image/*" onchange={onFile} hidden /></label>
-              <button class="ctl danger" onclick={onRemove}>Xóa</button>
-            {:else}
-              <label class="ctl add">+ Ảnh<input type="file" accept="image/*" onchange={onFile} hidden /></label>
-            {/if}
-          </div>
+        {#if canAdd}
+          <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_noninteractive_element_interactions -->
+          <label class="addtap" title="Thêm ảnh" onclick={(e) => e.stopPropagation()}>
+            <span class="cam" aria-hidden="true">+</span>
+            <input type="file" accept="image/*" onchange={onFile} hidden />
+          </label>
         {/if}
+        {#if uploading}<div class="busyov">…</div>{/if}
       </div>
+
       {#if uploadErr}<div class="uperr">{uploadErr}</div>{/if}
       <div class="name" class:jp={jpName}>{person.name}</div>
-      <div class="fliphint">Nhấn để xem đáp án</div>
+      <div class="fliphint">{canMenu ? 'Chuột phải · giữ để sửa ảnh' : 'Nhấn để xem đáp án'}</div>
+
+      {#if menuOpen}
+        <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+        <div class="menubg" onclick={(e) => { e.stopPropagation(); menuOpen = false; }}></div>
+        <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+        <div class="editmenu" onclick={(e) => e.stopPropagation()}>
+          <label class="mi">Đổi ảnh<input type="file" accept="image/*" onchange={onFile} hidden /></label>
+          <button class="mi danger" onclick={onRemove}>Xóa ảnh</button>
+        </div>
+      {/if}
     </div>
 
     <!-- BACK (the answer) -->
@@ -144,13 +183,12 @@
 </div>
 
 <style>
-  .card { perspective: 1600px; height: 340px; animation: cardin .55s cubic-bezier(.2,.8,.2,1) both; outline: none; }
+  .card { perspective: 1600px; height: 340px; animation: cardin .55s cubic-bezier(.2,.8,.2,1) both; outline: none; cursor: pointer; }
   .inner {
     position: relative; width: 100%; height: 100%; transform-style: preserve-3d;
     transition: transform .3s cubic-bezier(.6,.02,.2,1);
   }
   .card.flipped .inner { transform: rotateY(180deg); }
-  .card { cursor: pointer; }
   .card:focus-visible { box-shadow: 0 0 0 2px var(--accent); border-radius: 16px; }
 
   .face {
@@ -169,26 +207,36 @@
     width: 96px; height: 96px; border-radius: 50%; position: relative; display: grid; place-items: center;
     margin-bottom: 20px; overflow: hidden; border: 1px solid var(--hair);
     box-shadow: 0 10px 24px -10px rgba(0,0,0,.7), inset 0 0 0 4px rgba(0,0,0,.18);
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
   }
   .ini { font-family: var(--serif); font-weight: 600; font-size: 34px; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
   .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s; }
   .avatar img.ok { opacity: 1; }
-  .adminctl {
-    position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%);
-    display: flex; gap: 5px; white-space: nowrap;
+
+  /* photoless + admin: whole avatar adds on click */
+  .addtap {
+    position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; cursor: pointer;
+    background: rgba(0,0,0,.3); transition: background .2s;
   }
-  .adminctl.busy { cursor: wait; }
-  .ctl {
-    cursor: pointer; font-family: var(--mono); font-size: 10px; letter-spacing: .06em; line-height: 1;
-    color: #fff; background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep));
-    padding: 5px 11px; border-radius: 20px; border: 1.5px solid var(--panel);
-    box-shadow: 0 6px 16px -6px rgba(0,0,0,.6); transition: filter .15s;
+  .addtap:hover { background: rgba(0,0,0,.5); }
+  .cam { color: #fff; font-size: 34px; font-weight: 300; line-height: 1; }
+
+  .busyov { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; background: rgba(0,0,0,.5); color: #fff; font-size: 22px; }
+
+  /* change / remove context menu (right-click or long-press) */
+  .menubg { position: absolute; inset: 0; z-index: 5; background: rgba(0,0,0,.5); border-radius: 16px; }
+  .editmenu {
+    position: absolute; z-index: 6; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; gap: 9px;
   }
-  button.ctl { all: unset; cursor: pointer; font-family: var(--mono); font-size: 10px; letter-spacing: .06em;
-    color: #fff; padding: 5px 11px; border-radius: 20px; border: 1.5px solid var(--panel);
-    box-shadow: 0 6px 16px -6px rgba(0,0,0,.6); background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep)); }
-  .ctl:hover { filter: brightness(1.1); }
-  .ctl.danger, button.ctl.danger { background: linear-gradient(180deg, #555, #333); }
+  .mi, button.mi {
+    all: unset; cursor: pointer; text-align: center; font-family: var(--sans); font-weight: 700; font-size: 13.5px;
+    color: #fff; padding: 11px 26px; border-radius: 24px;
+    background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep));
+    box-shadow: 0 10px 22px -8px rgba(0,0,0,.7);
+  }
+  .mi.danger, button.mi.danger { background: linear-gradient(180deg, #6e2222, #391212); }
+  .mi:hover { filter: brightness(1.08); }
   .uperr { margin-top: 10px; font-family: var(--mono); font-size: 10px; color: var(--accent-bright); }
 
   .name { font-family: var(--serif); font-weight: 600; font-size: 23px; line-height: 1.12; letter-spacing: -.01em; }
