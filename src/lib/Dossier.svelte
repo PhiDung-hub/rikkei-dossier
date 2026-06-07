@@ -92,7 +92,7 @@
 
   <footer class="foot">
     <span>Rikkeisoft · Hồ sơ Lãnh đạo</span>
-    <span class="footright">Cập nhật {data.generated} · <AdminBar /></span>
+    <span class="footright"><span class="upd">Cập nhật {data.generated}</span><AdminBar /></span>
   </footer>
 </div>
 
@@ -154,8 +154,9 @@
 
   .foot {
     margin-top: 70px; padding-top: 24px; border-top: 1px solid var(--hair2); display: flex; justify-content: space-between;
-    flex-wrap: wrap; gap: 10px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; color: var(--faint); text-transform: uppercase;
+    align-items: center; flex-wrap: wrap; gap: 14px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; color: var(--faint); text-transform: uppercase;
   }
+  .footright { display: inline-flex; align-items: center; gap: 16px; }
 
   @media (max-width: 880px) {
     .layout { grid-template-columns: 1fr; gap: 26px; }

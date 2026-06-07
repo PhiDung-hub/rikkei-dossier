@@ -26,7 +26,10 @@
 {#if admin.on}
   <span class="bar">● Admin <button class="link" onclick={logout}>· Thoát</button></span>
 {:else}
-  <button class="link" onclick={() => (open = true)}>Admin</button>
+  <button class="adminbtn" onclick={() => (open = true)}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" /></svg>
+    Admin
+  </button>
 {/if}
 
 {#if open}
@@ -52,6 +55,20 @@
   .link:hover { color: var(--accent-bright); }
   .bar { color: var(--accent-bright); }
   .bar .link { color: var(--faint); }
+
+  /* Prominent admin entry button */
+  .adminbtn {
+    all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--sans); font-weight: 700; font-size: 14px; letter-spacing: .01em; text-transform: none;
+    color: var(--ink); padding: 10px 22px; border-radius: 24px; border: 1.5px solid var(--hair);
+    transition: color .2s, border-color .2s, background .2s, transform .12s;
+  }
+  .adminbtn svg { width: 16px; height: 16px; }
+  .adminbtn:hover {
+    color: #fff; border-color: transparent;
+    background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep));
+  }
+  .adminbtn:active { transform: translateY(1px); }
 
   .backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.5); backdrop-filter: blur(2px); }
   .modal {
