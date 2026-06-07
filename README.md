@@ -60,12 +60,20 @@ Team.”**
 > repo) can read every name, title, and email, and search engines may index it. If you
 > need it private again, restore the AES-256 passphrase gate from the project history.
 
-## Adding photos
+## Photos
 
-Drop `public/images/<slug>.jpg` and it replaces that person's initials avatar
-automatically. `<slug>` is the email local-part (e.g. `tung.ta@rikkeisoft.com` →
-`tung.ta.jpg`); see `slug` in `managers.clean.json`. Photos are git-ignored by default —
-commit them explicitly if you want them deployed.
+Each person can carry a `photo` URL in the data (the card shows it in the avatar; people
+without one keep their initials). Executive headshots are **hyperlinked** straight from
+`rikkeisoft.com` — no self-hosting — and those images send `Access-Control-Allow-Origin: *`,
+so they embed cross-origin without CORS issues.
+
+- To add/replace a photo, edit the `photo` field for that person in `managers.clean.json`
+  and rebuild: `node build.mjs --from-json`.
+- New people from the CSV are seeded from the `PHOTOS` map (slug → URL) at the top of
+  `build.mjs`.
+
+Any image URL works (or host your own). Slugs are the email local-part, e.g.
+`tung.ta@rikkeisoft.com` → `tung.ta`.
 
 ## Deploy (GitHub Pages)
 

@@ -16,7 +16,6 @@
     return `linear-gradient(150deg,hsl(${a} 55% 32%),hsl(${b} 60% 20%))`;
   }
 
-  const imgSrc = $derived(import.meta.env.BASE_URL + 'images/' + person.slug + '.jpg');
   const jpName = $derived(hasJP(person.name));
   let imgOk = $state(false);
   let flipped = $state(false);
@@ -25,8 +24,7 @@
   // Individual clicks afterwards still toggle this card on its own.
   $effect(() => { flipped = reveal; });
 
-  function toggle(e) {
-    if (e.target.closest('a')) return;
+  function toggle() {
     flipped = !flipped;
   }
   function key(e) {
@@ -50,8 +48,10 @@
       <div class="cornerNo">№ {String(index + 1).padStart(2, '0')}</div>
       <div class="avatar" style="background:{gradient(person.name)}">
         <span class="ini" class:jp={jpName}>{initials(person.name)}</span>
-        <img src={imgSrc} alt={person.name} loading="lazy" class:ok={imgOk}
-             onload={() => (imgOk = true)} onerror={(e) => e.currentTarget.remove()} />
+        {#if person.photo}
+          <img src={person.photo} alt={person.name} loading="lazy" class:ok={imgOk}
+               onload={() => (imgOk = true)} onerror={(e) => e.currentTarget.remove()} />
+        {/if}
       </div>
       <div class="name" class:jp={jpName}>{person.name}</div>
       <div class="fliphint">Nhấn để xem đáp án</div>
@@ -80,7 +80,7 @@
       <div class="row">
         <span class="lbl">Email</span>
         {#if person.email}
-          <a class="val" href="mailto:{person.email}">{person.email}</a>
+          <span class="val email">{person.email}</span>
         {:else}
           <span class="val none">chưa cập nhật</span>
         {/if}
@@ -94,7 +94,7 @@
   .card { perspective: 1600px; height: 340px; animation: cardin .55s cubic-bezier(.2,.8,.2,1) both; outline: none; }
   .inner {
     position: relative; width: 100%; height: 100%; transform-style: preserve-3d;
-    transition: transform .7s cubic-bezier(.6,.02,.2,1);
+    transition: transform .3s cubic-bezier(.6,.02,.2,1);
   }
   .card.flipped .inner { transform: rotateY(180deg); }
   .card { cursor: pointer; }
@@ -133,8 +133,7 @@
   .row { display: flex; gap: 12px; font-size: 13px; margin-bottom: 13px; align-items: flex-start; }
   .lbl { font-family: var(--mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); min-width: 64px; padding-top: 3px; }
   .val { flex: 1; color: var(--ink); word-break: break-word; }
-  a.val { color: var(--accent-bright); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
-  a.val:hover { border-bottom-color: var(--accent-bright); }
+  .val.email { color: var(--accent-bright); font-family: var(--mono); font-size: 12px; }
   .val.none { color: var(--faint); font-style: italic; }
   .foot {
     margin-top: auto; font-family: var(--mono); font-size: 9px; letter-spacing: .2em; text-transform: uppercase;

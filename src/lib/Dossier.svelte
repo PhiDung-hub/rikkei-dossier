@@ -51,16 +51,9 @@
     <DivisionNav divisions={data.divisions} current={results ? -1 : current} onselect={select} />
 
     <section class="stage">
-      {#snippet flipAllBtn()}
-        <button class="flipall" class:on={revealAll} onclick={() => (revealAll = !revealAll)}>
-          {revealAll ? 'Ẩn tất cả' : 'Lật tất cả'}
-        </button>
-      {/snippet}
-
       {#if results}
         <div class="stagehead">
           <h2>Kết quả tìm kiếm</h2><span class="num">{results.length} kết quả</span><span class="rule"></span>
-          {#if results.length}{@render flipAllBtn()}{/if}
         </div>
         {#if results.length}
           <div class="grid">
@@ -78,7 +71,6 @@
             <h2 class:jp={hasJP(d.name)}>{d.name}</h2>
             <span class="num">{pad(current + 1)} / {pad(data.divisions.length)}</span>
             <span class="rule"></span>
-            {@render flipAllBtn()}
           </div>
           <div class="grid">
             {#each d.people as p, i (p.slug + '-' + i)}
@@ -89,6 +81,13 @@
       {/if}
     </section>
   </div>
+
+  {#if results ? results.length > 0 : true}
+    <button class="flipall" class:on={revealAll} onclick={() => (revealAll = !revealAll)} aria-pressed={revealAll}>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h13l-3.5-3.5M20 17H7l3.5 3.5" /></svg>
+      {revealAll ? 'Ẩn tất cả' : 'Lật tất cả'}
+    </button>
+  {/if}
 
   <footer class="foot">
     <span>Rikkeisoft · Hồ sơ Lãnh đạo</span>
@@ -126,13 +125,28 @@
   .stagehead h2 { font-family: var(--serif); font-weight: 600; font-size: clamp(23px, 3.4vw, 38px); letter-spacing: -.015em; line-height: 1.05; }
   .num { font-family: var(--mono); font-size: 13px; color: var(--brass); letter-spacing: .1em; }
   .rule { flex: 1; height: 1px; background: var(--hair2); align-self: center; min-width: 30px; }
+  /* Floating action button — anchored bottom-right, thumb-reachable on mobile */
   .flipall {
-    all: unset; cursor: pointer; white-space: nowrap; font-family: var(--mono); font-size: 11px;
-    letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 9px 18px;
-    border-radius: 30px; border: 1px solid var(--hair); transition: color .2s, border-color .2s, background .2s;
+    position: fixed; z-index: 40;
+    right: max(22px, env(safe-area-inset-right));
+    bottom: max(22px, env(safe-area-inset-bottom));
+    display: inline-flex; align-items: center; gap: 9px; cursor: pointer; border: 0;
+    font-family: var(--sans); font-weight: 800; font-size: 15px; letter-spacing: .01em;
+    color: #fff; padding: 15px 24px; border-radius: 40px; white-space: nowrap;
+    background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep));
+    box-shadow: 0 18px 38px -12px rgba(0,0,0,.55), 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+    transition: transform .14s, filter .2s, box-shadow .2s;
   }
-  .flipall:hover { color: var(--ink); border-color: var(--accent); }
-  .flipall.on { color: #fff; border-color: transparent; background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep)); }
+  .flipall:hover { filter: brightness(1.08); transform: translateY(-2px); }
+  .flipall:active { transform: translateY(0) scale(.98); }
+  .flipall.on {
+    color: var(--ink); background: linear-gradient(180deg, var(--panel2), var(--panel));
+    box-shadow: 0 18px 38px -12px rgba(0,0,0,.55), inset 0 0 0 1.6px var(--accent);
+  }
+  .flipall .ic { width: 17px; height: 17px; flex: none; }
+  @media (max-width: 560px) {
+    .flipall { right: 14px; bottom: 14px; padding: 14px 22px; font-size: 15px; }
+  }
 
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(262px, 1fr)); gap: 22px; }
   .empty { color: var(--muted); font-size: 15px; padding: 60px 0; text-align: center; font-style: italic; }

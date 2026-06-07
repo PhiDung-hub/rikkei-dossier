@@ -22,7 +22,7 @@ function expand(c) {
   const dom = c.dom || '';
   const divisions = c.d.map(([name, people]) => ({
     name,
-    people: people.map(([nm, title, email, rank]) => {
+    people: people.map(([nm, title, email, rank, photo]) => {
       const local = email || '';
       const full = email ? (email.includes('@') ? email : email + dom) : null;
       return {
@@ -32,6 +32,7 @@ function expand(c) {
         rank: rank || null,
         tier: tierFor(rank || null),
         slug: local ? (local.includes('@') ? local.split('@')[0] : local) : slugify(nm),
+        photo: photo || null,
       };
     }),
   }));

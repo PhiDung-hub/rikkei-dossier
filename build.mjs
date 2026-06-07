@@ -24,6 +24,27 @@ const p = (f) => join(HERE, f);
 
 const EMAIL_DOMAIN = '@rikkeisoft.com'; // most-common domain, factored out of the payload
 
+// Executive headshots, hyperlinked from rikkeisoft.com (CORS-open, no self-hosting).
+// Seeded onto each person (by slug) when building from the CSV; afterwards the URL lives
+// in managers.clean.json and can be edited there. People without an entry keep initials.
+const PHOTOS = {
+  'tung.ta':   'https://rikkeisoft.com/wp-content/uploads/2026/03/Anh-sep-website-1.jpg', // Tạ Sơn Tùng (Chủ tịch)
+  'dung.phan': 'https://rikkeisoft.com/wp-content/uploads/2022/09/phan-the-dung.png',
+  'hoa.dang':  'https://rikkeisoft.com/wp-content/uploads/2022/09/dang-thai-hoa.png',
+  'huybq':     'https://rikkeisoft.com/wp-content/uploads/2022/09/bui-quang-huy-2.png',
+  'tung.bui':  'https://rikkeisoft.com/wp-content/uploads/2023/01/bui-hoang-tung.png',
+  'kynq':      'https://rikkeisoft.com/wp-content/uploads/2022/09/nguyen-quang-ky-2-e1716777352543.png',
+  'chung.dao': 'https://rikkeisoft.com/wp-content/uploads/2022/09/dao-thanh-chung-2.png',
+  'luanhh':    'https://rikkeisoft.com/wp-content/uploads/2022/09/ha-huy-luan.png',
+  'lamnv':     'https://rikkeisoft.com/wp-content/uploads/2022/09/nguyen-viet-lam.png',
+  'anhptl':    'https://rikkeisoft.com/wp-content/uploads/2022/09/phan-thi-lan-anh.png',
+  'hungvq':    'https://rikkeisoft.com/wp-content/uploads/2024/02/vuongquanghung-1.png',
+  'bauhm':     'https://rikkeisoft.com/wp-content/uploads/2023/01/hoang-minh-bau.png',
+  'phuongtv':  'https://rikkeisoft.com/wp-content/uploads/2024/11/Ta-Viet-Phuong.png',
+  'khangpq':   'https://rikkeisoft.com/wp-content/uploads/2026/02/PHAM-QUANG-KHANG_s.jpg',
+  'hangntt2':  'https://rikkeisoft.com/wp-content/uploads/2024/10/C-Hang.png',
+};
+
 // ---------------------------------------------------------------------------
 // CSV parser — quoted fields, escaped "" quotes, embedded commas/newlines
 // ---------------------------------------------------------------------------
@@ -95,7 +116,8 @@ function buildModel(csvText) {
 
     const email = clean(emailRaw).toLowerCase() || null;
     const { label: rank, tier } = rankInfo(noteRaw);
-    const person = { name, title: clean(titleRaw) || null, email, rank, tier, slug: slugFor(email, name) };
+    const slug = slugFor(email, name);
+    const person = { name, title: clean(titleRaw) || null, email, rank, tier, slug, photo: PHOTOS[slug] || null };
 
     if (!groups.has(division)) groups.set(division, []);
     groups.get(division).push(person);
@@ -107,7 +129,7 @@ function buildModel(csvText) {
 
 // ---------------------------------------------------------------------------
 // Compaction — drop repeated keys, factor out the shared email domain.
-// Person tuple: [name, title|0, email|0, rank|0]   (tier + slug derived client-side)
+// Person tuple: [name, title|0, email|0, rank|0, photo|0]  (tier + slug derived client-side)
 //   email stored as local-part when it ends with EMAIL_DOMAIN, else the full address.
 // ---------------------------------------------------------------------------
 function compact(model) {
@@ -121,7 +143,7 @@ function compact(model) {
     dom: EMAIL_DOMAIN,
     d: model.divisions.map((dv) => [
       dv.name,
-      dv.people.map((x) => [x.name, x.title || 0, emailCell(x.email), x.rank || 0]),
+      dv.people.map((x) => [x.name, x.title || 0, emailCell(x.email), x.rank || 0, x.photo || 0]),
     ]),
   };
 }
