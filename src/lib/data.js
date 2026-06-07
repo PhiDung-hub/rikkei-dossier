@@ -54,8 +54,10 @@ async function applyOverrides(model) {
     const base = import.meta.env.BASE_URL;
     for (const d of model.divisions)
       for (const p of d.people) {
+        if (!(p.slug in ov)) continue;
         const v = ov[p.slug];
-        if (v) p.photo = /^https?:/.test(v) ? v : base + v;
+        // string → use it (add/replace); null → explicitly removed (hide baked photo)
+        p.photo = v ? (/^https?:/.test(v) ? v : base + v) : null;
       }
   } catch { /* overrides are optional */ }
   return model;

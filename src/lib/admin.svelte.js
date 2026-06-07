@@ -1,9 +1,10 @@
 // Admin state + actions. The password is verified by the Worker (server-side);
-// it is only held in this tab's sessionStorage, never in the page source.
+// it is held in localStorage so a login persists across reloads/restarts (until logout).
 import { ADMIN_WORKER_URL } from './config.js';
 
 const PW_KEY = 'rikkei-admin-pw';
-let pw = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(PW_KEY)) || '';
+const store = typeof localStorage !== 'undefined' ? localStorage : null;
+let pw = (store && store.getItem(PW_KEY)) || '';
 
 export const admin = $state({ on: !!pw });
 
@@ -24,13 +25,13 @@ export async function login(password) {
   if (res.status === 401) throw new Error('unauthorized');
   if (!res.ok) throw new Error('server');
   pw = password;
-  sessionStorage.setItem(PW_KEY, password);
+  store?.setItem(PW_KEY, password);
   admin.on = true;
 }
 
 export function logout() {
   pw = '';
-  sessionStorage.removeItem(PW_KEY);
+  store?.removeItem(PW_KEY);
   admin.on = false;
 }
 
@@ -55,12 +56,21 @@ function resize(file, max = 400, quality = 0.82) {
   });
 }
 
-// Uploads a photo for `slug`. Returns the committed path on success.
+// Uploads (adds or replaces) a photo for `slug`. Returns the committed path.
 export async function uploadPhoto(slug, file) {
   if (!ADMIN_WORKER_URL) throw new Error('not-configured');
   const image = await resize(file);
   const res = await post({ password: pw, slug, image });
   if (res.status === 401) { logout(); throw new Error('unauthorized'); }
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'upload failed');
+  return res.json();
+}
+
+// Removes a person's photo (deletes the file and hides any baked/external photo).
+export async function removePhoto(slug) {
+  if (!ADMIN_WORKER_URL) throw new Error('not-configured');
+  const res = await post({ password: pw, slug, action: 'remove' });
+  if (res.status === 401) { logout(); throw new Error('unauthorized'); }
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'remove failed');
   return res.json();
 }

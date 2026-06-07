@@ -5,12 +5,46 @@
   import AdminBar from './AdminBar.svelte';
 
   let { data } = $props();
-  let current = $state(0);
+
+  // Deep-link / persist the selected division via the URL hash (#bo-phan=<name>)
+  // and sessionStorage, so it survives reload and is shareable.
+  const DIV_KEY = 'rikkei-div';
+  function idxFromHash() {
+    const m = typeof location !== 'undefined' && location.hash.match(/(?:^#|&)bo-phan=([^&]+)/);
+    if (!m) return -1;
+    return data.divisions.findIndex((d) => d.name === decodeURIComponent(m[1]));
+  }
+  function initialDivision() {
+    const h = idxFromHash();
+    if (h >= 0) return h;
+    try {
+      const s = sessionStorage.getItem(DIV_KEY);
+      if (s) { const i = data.divisions.findIndex((d) => d.name === s); if (i >= 0) return i; }
+    } catch { /* ignore */ }
+    return 0;
+  }
+
+  let current = $state(initialDivision());
   let query = $state('');
   let revealAll = $state(false);   // "flip all" signal for the current page
 
   const hasJP = (s) => /[぀-ヿ㐀-鿿]/.test(s || '');
   const pad = (n) => String(n).padStart(2, '0');
+
+  function syncUrl(i) {
+    const name = data.divisions[i]?.name;
+    if (!name) return;
+    history.replaceState(null, '', '#bo-phan=' + encodeURIComponent(name));
+    try { sessionStorage.setItem(DIV_KEY, name); } catch { /* ignore */ }
+  }
+
+  // One-time: persist the initial division to both URL and session, and follow nav.
+  $effect(() => {
+    syncUrl(initialDivision());
+    const onHash = () => { const i = idxFromHash(); if (i >= 0) { current = i; query = ''; revealAll = false; } };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  });
 
   let results = $derived.by(() => {
     const q = query.trim().toLowerCase();
@@ -26,6 +60,7 @@
 
   function select(i) {
     current = i; query = ''; revealAll = false;
+    syncUrl(i);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 </script>
