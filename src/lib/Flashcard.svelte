@@ -183,7 +183,7 @@
 </div>
 
 <style>
-  .card { perspective: 1600px; height: 340px; animation: cardin .55s cubic-bezier(.2,.8,.2,1) both; outline: none; cursor: pointer; }
+  .card { perspective: 1600px; height: 430px; animation: cardin .55s cubic-bezier(.2,.8,.2,1) both; outline: none; cursor: pointer; }
   .inner {
     position: relative; width: 100%; height: 100%; transform-style: preserve-3d;
     transition: transform .3s cubic-bezier(.6,.02,.2,1);
@@ -202,14 +202,16 @@
   }
   .cornerNo { position: absolute; top: 13px; right: 15px; font-family: var(--mono); font-size: 10px; letter-spacing: .18em; color: var(--faint); }
 
-  .front { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 26px 22px; text-align: center; }
+  .front { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 22px 14px; text-align: center; }
   .avatar {
-    width: 96px; height: 96px; border-radius: 50%; position: relative; display: grid; place-items: center;
-    margin-bottom: 20px; overflow: hidden; border: 1px solid var(--hair);
+    width: min(96%, 320px); aspect-ratio: 1; max-width: 100%;
+    border-radius: 50%; position: relative; display: grid; place-items: center;
+    container-type: inline-size;
+    margin-bottom: 16px; overflow: hidden; border: 1px solid var(--hair);
     box-shadow: 0 10px 24px -10px rgba(0,0,0,.7), inset 0 0 0 4px rgba(0,0,0,.18);
     user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
   }
-  .ini { font-family: var(--serif); font-weight: 600; font-size: 34px; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+  .ini { font-family: var(--serif); font-weight: 600; font-size: 35cqw; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
   .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s; }
   .avatar img.ok { opacity: 1; }
 
@@ -219,7 +221,7 @@
     background: rgba(0,0,0,.3); transition: background .2s;
   }
   .addtap:hover { background: rgba(0,0,0,.5); }
-  .cam { color: #fff; font-size: 34px; font-weight: 300; line-height: 1; }
+  .cam { color: #fff; font-size: 30cqw; font-weight: 300; line-height: 1; }
 
   .busyov { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; background: rgba(0,0,0,.5); color: #fff; font-size: 22px; }
 
